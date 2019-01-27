@@ -4,12 +4,14 @@
 #define MALE_D_PLUS 3
 #define MALE_D_MINUS 4
 #define MALE_VCC 5
+#define MALE_SHIELD 10
 
 //Female USB Pins
 #define FEMALE_GROUND 6
 #define FEMALE_D_PLUS 7
 #define FEMALE_D_MINUS 8
 #define FEMALE_VCC 9
+#define FEMALE_SHIELD 11
 
 void setup() {
 
@@ -19,6 +21,7 @@ void setup() {
   pinMode(FEMALE_D_PLUS, INPUT_PULLUP);
   pinMode(FEMALE_D_MINUS, INPUT_PULLUP);
   pinMode(FEMALE_VCC, INPUT_PULLUP);
+  pinMode(FEMALE_SHIELD, INPUT_PULLUP);
 
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -45,43 +48,44 @@ void setup() {
   }
 }
 
-int malePins[4] = { MALE_GROUND, MALE_D_PLUS, MALE_D_MINUS, MALE_VCC };
-int femalePins[4] = { FEMALE_GROUND, FEMALE_D_PLUS, FEMALE_D_MINUS, FEMALE_VCC };
+#define PIN_COUNT 5
+
+int malePins[5] = { MALE_GROUND, MALE_D_PLUS, MALE_D_MINUS, MALE_VCC, MALE_SHIELD };
+int femalePins[5] = { FEMALE_GROUND, FEMALE_D_PLUS, FEMALE_D_MINUS, FEMALE_VCC, FEMALE_SHIELD };
 
 bool mainTest() {
 
   delay(10);
-  pinMode(MALE_GROUND, OUTPUT);
-  pinMode(MALE_D_PLUS, OUTPUT);
-  pinMode(MALE_D_MINUS, OUTPUT);
-  pinMode(MALE_VCC, OUTPUT);
+  for (int i = 0; i < PIN_COUNT; i++) {
+    pinMode(malePins[i], OUTPUT);
+  }
   delay(10);
 
   Serial.println("Main Test....");
-  digitalWrite(MALE_GROUND, LOW);
-  digitalWrite(MALE_D_PLUS, LOW);
-  digitalWrite(MALE_D_MINUS, LOW);
-  digitalWrite(MALE_VCC, LOW);
+  for (int i = 0; i < PIN_COUNT; i++) {
+    digitalWrite(malePins[i], LOW);
+  }
 
   bool fGoundExpected = digitalRead(FEMALE_GROUND) == LOW;
   bool fDPlusExpected = digitalRead(FEMALE_D_PLUS) == LOW;
   bool fDMinusExpected = digitalRead(FEMALE_D_MINUS) == LOW;
   bool fVccExpected = digitalRead(FEMALE_VCC) == HIGH;
+  bool fShieldExpected = digitalRead(FEMALE_SHIELD) == LOW;
 
-  if (fGoundExpected && fDPlusExpected && fDMinusExpected && fVccExpected)
+  if (fGoundExpected && fDPlusExpected && fDMinusExpected && fVccExpected && fShieldExpected)
   {
     Serial.println("Passed!");
     return true;
   } else {
     Serial.println("FAILED!");
-    errorPrinter(fGoundExpected, fDPlusExpected, fDMinusExpected, fVccExpected);
+    errorPrinter(fGoundExpected, fDPlusExpected, fDMinusExpected, fVccExpected, fShieldExpected);
     return false;
   }
 }
 
 bool BridgeTest(int index, int expectedOutput) {
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < PIN_COUNT; i++) {
     if (i == index) {
       pinMode(malePins[i], OUTPUT);
     } else {
@@ -97,7 +101,7 @@ bool BridgeTest(int index, int expectedOutput) {
 
 
   bool failingTest = false;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < PIN_COUNT; i++) {
     Serial.print("i=");
     Serial.print(i);
     int pinReading = digitalRead(femalePins[i]);
@@ -120,7 +124,7 @@ bool BridgeTest(int index, int expectedOutput) {
   }
 }
 
-void errorPrinter(bool fGoundExpected, bool fDPlusExpected, bool fDMinusExpected, bool fVccExpected) {
+void errorPrinter(bool fGoundExpected, bool fDPlusExpected, bool fDMinusExpected, bool fVccExpected, bool fShieldExpected) {
   Serial.print("Female Gound was as expected Expected: ");
   Serial.println(fGoundExpected);
   Serial.print("Female DPlus was as Expected: ");
@@ -129,15 +133,16 @@ void errorPrinter(bool fGoundExpected, bool fDPlusExpected, bool fDMinusExpected
   Serial.println(fDMinusExpected);
   Serial.print("Female Vcc was as Expected: ");
   Serial.println(fVccExpected);
+  Serial.print("Female Shield was as Expected: ");
+  Serial.println(fShieldExpected);
 }
 
 bool initialStateTest() {
 
   delay(10);
-  pinMode(MALE_GROUND, INPUT);
-  pinMode(MALE_D_PLUS, INPUT);
-  pinMode(MALE_D_MINUS, INPUT);
-  pinMode(MALE_VCC, INPUT);
+  for (int i = 0; i < PIN_COUNT; i++) {
+    pinMode(malePins[i], INPUT);
+  }
   delay(10);
 
   Serial.println("Initial State Test....");
@@ -145,14 +150,15 @@ bool initialStateTest() {
   bool fDPlusExpected = digitalRead(FEMALE_D_PLUS) == HIGH;
   bool fDMinusExpected = digitalRead(FEMALE_D_MINUS) == HIGH;
   bool fVccExpected = digitalRead(FEMALE_VCC) == HIGH;
+  bool fShieldExpected = digitalRead(FEMALE_SHIELD) == HIGH;
 
-  if (fGoundExpected && fDPlusExpected && fDMinusExpected && fVccExpected)
+  if (fGoundExpected && fDPlusExpected && fDMinusExpected && fVccExpected && fShieldExpected)
   {
     Serial.println("Passed!");
     return true;
   } else {
     Serial.println("FAILED!");
-    errorPrinter(fGoundExpected, fDPlusExpected, fDMinusExpected, fVccExpected);
+    errorPrinter(fGoundExpected, fDPlusExpected, fDMinusExpected, fVccExpected, fShieldExpected);
 
     return false;
   }
